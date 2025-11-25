@@ -1,15 +1,16 @@
-
-import './global.css'
+import { Routes, Route } from "react-router-dom";
+import Register from "./pages/auth/Register";
+import Login from "./pages/auth/Login";
+import Forget from "./pages/auth/Forget";
 
 function App() {
-  
   return (
-    <>
-      <h1 className="text-3xl font-bold underline bg-red-300 text-center">
-    let's do it!
-  </h1>
-    </>
-  )
+    <Routes>
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/forget" element={<Forget />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
