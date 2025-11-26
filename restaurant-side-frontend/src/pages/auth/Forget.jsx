@@ -1,50 +1,78 @@
-import { Mail } from "lucide-react";
+import { useState } from "react";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { Link } from "react-router-dom";
 
-export default function Forget() {
+const ForgotPassword = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleForgot = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/forgot-password",
+        { email },
+        { withCredentials: true }
+      );
+
+      toast.success(res.data.message || "Reset link sent to your email!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#0C0F14] flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-[#161B22] p-8 rounded-2xl shadow-xl border border-[#1F242B]">
-        
-        {/* Title */}
-        <h2 className="text-3xl font-bold text-white mb-6 text-center">
-          Forgot Password
+    <div className="min-h-screen bg-black flex items-center justify-center px-4">
+      <div className="bg-neutral-900 p-8 rounded-2xl shadow-lg w-full max-w-md border border-neutral-800">
+
+        <h2 className="text-2xl font-bold text-white text-center mb-6">
+          Forgot Password 🔐
         </h2>
 
-        <p className="text-gray-400 text-center mb-6 text-sm">
-          Enter your email to receive a password reset link.
-        </p>
+        <form onSubmit={handleForgot} className="space-y-4">
 
-        {/* Email Input */}
-        <div className="mb-6">
-          <label className="block text-gray-300 mb-2">Email Address</label>
-          <div className="flex items-center bg-[#0C0F14] border border-gray-700 rounded-lg px-3 py-2">
-            <Mail className="w-5 h-5 text-gray-400 mr-2" />
+          {/* Email Input */}
+          <div>
+            <label className="text-gray-300 text-sm">Email Address</label>
             <input
               type="email"
-              placeholder="Enter your email"
-              className="bg-transparent text-white outline-none w-full"
+              placeholder="Enter your registered email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full mt-1 bg-neutral-800 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              required
             />
           </div>
-        </div>
 
-        {/* Submit Button */}
-        {/* <button  className="text-blue-400 hover:text-blue-500 transition font-medium" transition text-black font-semibold py-3 rounded-lg mb-4">
-          Send Reset Link
-        </button> */}
-        <button
-  className="w-full bg-gradient-to-r from-[#52B7FF] to-[#0058FF] text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-300"
->
-  Send Reset Link
-</button>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-lg font-semibold"
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+        </form>
 
-        {/* Back to Login */}
-        <p className="text-center text-gray-400 text-sm">
+        {/* Login Redirect */}
+        <p className="text-center text-gray-400 text-sm mt-4">
           Back to{" "}
-          <a href="/login" className="text-blue-400 hover:text-blue-500 transition font-medium">
+          <Link
+            to="/login"
+            className="text-blue-400 hover:text-blue-500 font-medium"
+          >
             Login
-          </a>
+          </Link>
         </p>
+
       </div>
     </div>
   );
-}
+};
+
+export default ForgotPassword;
