@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function ResetPassword() {
-  const { token } = useParams(); // from /reset-password/:token route
   const navigate = useNavigate();
 
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,15 +21,14 @@ export default function ResetPassword() {
     }
 
     setLoading(true);
-
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/auth/reset-password/${token}`,
-        { password },
+        "http://localhost:5000/api/auth/reset-password",
+        { email, otp, password, confirmPassword },
         { withCredentials: true }
       );
 
-      toast.success(res.data.message || "Password reset successful!");
+      toast.success(res.data.message || "Password reset successfully!");
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       toast.error(err.response?.data?.message || "Reset failed!");
@@ -40,12 +40,36 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="bg-neutral-900 p-8 rounded-2xl shadow-lg w-full max-w-md border border-neutral-800">
-
         <h2 className="text-2xl font-bold text-white text-center mb-6">
           Reset Your Password 🔐
         </h2>
 
-        <form onSubmit={handleReset} className="space-y-5">
+        <form onSubmit={handleReset} className="space-y-4">
+          {/* Email */}
+          <div>
+            <label className="text-gray-300 text-sm">Email</label>
+            <input
+              type="email"
+              placeholder="Enter your registered email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full mt-1 bg-neutral-800 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
+          </div>
+
+          {/* OTP */}
+          <div>
+            <label className="text-gray-300 text-sm">OTP</label>
+            <input
+              type="text"
+              placeholder="Enter the OTP sent to email"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="w-full mt-1 bg-neutral-800 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
+          </div>
 
           {/* New Password */}
           <div>
@@ -65,7 +89,7 @@ export default function ResetPassword() {
             <label className="text-gray-300 text-sm">Confirm Password</label>
             <input
               type="password"
-              placeholder="Re-enter new password"
+              placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full mt-1 bg-neutral-800 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -73,7 +97,7 @@ export default function ResetPassword() {
             />
           </div>
 
-          {/* Reset Button */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -83,7 +107,6 @@ export default function ResetPassword() {
           </button>
         </form>
 
-        {/* Back to Login */}
         <p className="text-center text-gray-400 text-sm mt-4">
           Back to{" "}
           <span
@@ -93,7 +116,6 @@ export default function ResetPassword() {
             Login
           </span>
         </p>
-
       </div>
     </div>
   );

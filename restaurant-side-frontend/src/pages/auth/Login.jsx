@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,8 +13,6 @@ export default function Login() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,31 +20,20 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg("");
+    setLoading(true);
 
     try {
-      setLoading(true);
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login", // Correct backend URL
+        formData,
+        { withCredentials: true } // Important for cookies
+      );
 
-      const res = await fetch("http://localhost:8000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // IMPORTANT for JWT cookies
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setLoading(false);
-        return setErrorMsg(data.message || "Invalid credentials.");
-      }
-
-      setSuccessMsg("Login successful! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 1200);
+      toast.success(res.data.message || "Login successful!");
+      setTimeout(() => navigate("/dashboard"), 1200); // Change if you don't have /dashboard route
 
     } catch (err) {
-      setErrorMsg("Server error. Try again later.");
+      toast.error(err.response?.data?.message || "Server error. Try again later.");
     } finally {
       setLoading(false);
     }
@@ -52,25 +41,14 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#0C0F14] flex items-center justify-center px-4 py-10">
-      
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-black/40"></div>
 
       <div className="relative w-full max-w-md bg-white/5 backdrop-blur-lg border border-white/10 shadow-2xl rounded-3xl p-10">
 
-        <h1 className="text-3xl font-bold text-white text-center">
-          Welcome Back
-        </h1>
-        <p className="text-gray-400 text-center mt-2">
-          Login to manage your restaurant
-        </p>
+        <h1 className="text-3xl font-bold text-white text-center">Welcome Back</h1>
+        <p className="text-gray-400 text-center mt-2">Login to manage your restaurant</p>
 
-        {/* Error / Success Messages */}
-        {errorMsg && <p className="text-red-400 text-center mt-4">{errorMsg}</p>}
-        {successMsg && <p className="text-green-400 text-center mt-4">{successMsg}</p>}
-
-        {/* FORM */}
         <form onSubmit={handleSubmit} className="mt-10 space-y-6">
-
           {/* Email */}
           <div className="flex items-center gap-3 bg-white/5 border border-white/15 px-4 py-3 rounded-xl">
             <Mail className="text-gray-300" size={20} />
@@ -102,7 +80,7 @@ export default function Login() {
           {/* Forgot Password */}
           <div className="flex justify-end">
             <Link
-              to="/forgot-password"
+              to="/forget" // Correct frontend route
               className="text-[#52B7FF] hover:underline text-sm"
             >
               Forgot Password?
