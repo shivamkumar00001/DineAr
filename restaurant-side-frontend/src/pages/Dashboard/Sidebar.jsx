@@ -1,6 +1,7 @@
 import { 
   HomeIcon, CubeIcon, ChatBubbleLeftRightIcon, Cog6ToothIcon, ChartBarIcon, 
-  ClipboardDocumentListIcon, BellIcon, XMarkIcon 
+  ClipboardDocumentListIcon, BellIcon, XMarkIcon, 
+  QrCodeIcon
 } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"; // import Link
@@ -16,9 +17,9 @@ export default function Sidebar() {
 const menuItems = [
   { name: "Dashboard", icon: <HomeIcon className="w-5 h-5" />, path: "/" },
   { name: "AR Insights", icon: <ChartBarIcon className="w-5 h-5" />, path: "/ar-insights" },
-  { name: "Digital Menu (3D Models)", icon: <CubeIcon className="w-5 h-5" />, path: "/digital-menu" },
+  { name: "Digital Menu", icon: <CubeIcon className="w-5 h-5" />, path: "/digital-menu" },
   { name: "Table Ordering", icon: <ClipboardDocumentListIcon className="w-5 h-5" />, path: "/table-ordering" },
-  { name: "Customer Feedback", icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />, path: "/feedback" },
+  { name: "Get Qr", icon: <QrCodeIcon className="w-5 h-5" />, path: "/qrPage" },
   { name: "Subscribe", icon: <BellIcon className="w-5 h-5" />, path: "/subscribe" }, // updated
   { name: "Settings", icon: <Cog6ToothIcon className="w-5 h-5" />, path: "/settings" },
 ];
@@ -44,7 +45,7 @@ const menuItems = [
         </button>
 
         {/* Menu Items */}
-              <ul className="space-y-2 flex-1">
+              <ul className="space-y-4 flex-1">
         {menuItems.map((item, index) => (
           <Link to={item.path} key={index}>
             <li
