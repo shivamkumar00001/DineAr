@@ -39,7 +39,7 @@ export default function Dashboard() {
 
           {/* AR View Statistics - 2/3 width on large screens */}
           <div className="lg:col-span-2 h-full">
-            <ARViewStatistics />
+            <ARViewStatistics restaurantId="restaurant123" />
           </div>
 
           {/* Model Insights - 1/3 width */}
