@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { Plus, Menu, ChefHat, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import Sidebar from "../../components/menu/Sidebar.jsx";
 import DishCard from "../../components/menu/DishCard.jsx";
 import DishFilterBar from "../../components/menu/DishFilterBar.jsx";
 
 import useMenu from "../../hooks/useMenu.js";
 import GetQRButton from "../../components/menu/GetQrButton.jsx";
+import Sidebar from "../../components/Sidebar.jsx";
 
 const DishList = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -117,7 +117,17 @@ const DishList = () => {
               <X className="w-6 h-6" />
             </button>
 
-            <Sidebar />
+
+
+
+            <Sidebar/>
+
+
+
+
+
+
+
           </div>
         </div>
 
@@ -136,7 +146,6 @@ const DishList = () => {
                 <Plus className="w-5 h-5" />
                 Add New Dish
               </button>
-              <GetQRButton restaurantId="restaurant123"/>
             </div>
 
             {/* Statistics */}

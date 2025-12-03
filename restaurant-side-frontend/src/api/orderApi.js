@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/v1";
+const API = "http://localhost:5001/api/v1";
 
 export const getRestaurantOrders = async (restaurantId) => {
   return axios.get(`${API}/restaurants/${restaurantId}/orders`);

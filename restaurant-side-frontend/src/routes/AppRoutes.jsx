@@ -13,29 +13,16 @@ import Dashboard from "../pages/Dashboard/OwnerDashboard";
 
 export default function AppRoutes() {
   return <>
-      
-         <Routes>
-          <Route path ="/dashboard" element= {<OwnerDashBoard/>}/>
-          <Route path ="/subscribe" element = {<SubscriptionPage/>}/>
+          <Routes>
+          <Route path ="/" element= {<LandingPage/>}/>
+          <Route path ="/subscribe/:restaurantId" element = {<SubscriptionPage/>}/>
           <Route path="/restaurant/:restaurantId/dishes" element={<DishList />} />
-
           <Route path="/restaurant/:restaurantId/menu/add" element={<AddDishPage />} />
           <Route path="/restaurants/:restaurantId/dish/:id/edit" element={<EditDishPage/>}/>
           <Route path="/qr/:restaurantId" element={<QrPage />} />
-
-
+          <Route path="/dashboard/:restaurantId" element={<Dashboard/>}/>
            {/* NEW ORDER MANAGEMENT ROUTE */}
           <Route path="/restaurant/:restaurantId/orders" element={<OrdersPage/>} />
-
-          
-
-
-
-
-
-
-
-         
          </Routes>
        
    </>

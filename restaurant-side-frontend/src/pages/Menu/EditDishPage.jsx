@@ -1,7 +1,7 @@
 // src/pages/EditDishPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axiosClient from "../../api/axiosClient";
+import axiosClient from "../../api/AxiosClient";
 
 import DishForm from "../../components/menu/EditDishForm";
 

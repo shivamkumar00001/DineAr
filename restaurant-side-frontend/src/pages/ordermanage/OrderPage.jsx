@@ -3,7 +3,7 @@ import OrderColumn from "../../components/orders/OrderColumn";
 import { getRestaurantOrders, updateOrderStatus } from "../../api/orderApi";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io("http://localhost:5001");
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
