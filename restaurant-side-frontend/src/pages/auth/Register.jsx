@@ -1,16 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Lock,
-  Building2,
-  Pin,
-  ChefHat,
+import { Link, useNavigate } from "react-router-dom";
+import { 
+  User, Mail, Phone, MapPin, Lock, Building2, ChefHat 
 } from "lucide-react";
 
 export default function Register() {
@@ -19,143 +12,196 @@ export default function Register() {
   const [formData, setFormData] = useState({
     restaurantName: "",
     ownerName: "",
-    phone: "",
     email: "",
+    phone: "",
     state: "",
     city: "",
     pincode: "",
     type: "",
+    category: "",
     password: "",
     confirmPassword: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  // Handle input change
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // clear previous error on typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
+    // Frontend validation
+    const newErrors = {};
+
+    for (const [key, value] of Object.entries(formData)) {
+      if (!value) newErrors[key] = "This field is required";
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match!");
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    setLoading(true);
-
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        formData
+      setLoading(true);
+
+      const { data } = await axios.post(
+        "/api/auth/register",
+        formData,
+        { withCredentials: true }
       );
 
-      toast.success(res.data.message || "Registration successful!");
-      setTimeout(() => navigate("/login"), 1500);
+      toast.success(data.message || "Registered Successfully!");
+
+      navigate("/login");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Server error, try again later");
+      const backendErrors = err.response?.data?.errors;
+      const message = err.response?.data?.message || "Registration Failed";
+
+      if (backendErrors) setErrors(backendErrors);
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0C0F14] flex items-center justify-center px-4 py-10">
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-black/40"></div>
+    <div className="min-h-screen bg-[#0C0F14] text-white flex items-center justify-center p-4">
+      <div className="w-full max-w-xl bg-white/5 border border-white/10 p-8 rounded-2xl shadow-xl">
+        <h1 className="text-3xl font-semibold text-center mb-6">Register</h1>
 
-      <div className="relative w-full max-w-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-2xl rounded-3xl p-10">
-        <h1 className="text-3xl font-bold text-white text-center">
-          Create Your Restaurant Account
-        </h1>
-        <p className="text-gray-400 text-center mt-2">
-          Enter your business details to get started
-        </p>
-
-        <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
-          <InputBox icon={<Building2 size={20} />} name="restaurantName" placeholder="Restaurant Name" onChange={handleChange} />
-          <InputBox icon={<User size={20} />} name="ownerName" placeholder="Owner Full Name" onChange={handleChange} />
-          <InputBox icon={<Phone size={20} />} name="phone" placeholder="Phone Number" onChange={handleChange} />
-          <InputBox icon={<Mail size={20} />} name="email" placeholder="Email Address" type="email" onChange={handleChange} />
-
-          {/* State Select */}
-          <SelectBox
-            icon={<MapPin size={20} />}
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-            options={["Bihar", "Delhi", "Uttar Pradesh", "Maharashtra"]}
-            placeholder="Select State"
-          />
-
-          <InputBox icon={<MapPin size={20} />} name="city" placeholder="City" onChange={handleChange} />
-          <InputBox icon={<Pin size={20} />} name="pincode" placeholder="Pincode" onChange={handleChange} />
-
-          {/* Type Select */}
-          <SelectBox
-            icon={<ChefHat size={20} />}
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            options={["Veg", "Non-Veg", "Café", "Bakery", "Fine Dining"]}
-            placeholder="Select Restaurant Type"
-          />
-
-          <InputBox icon={<Lock size={20} />} name="password" placeholder="Password" type="password" onChange={handleChange} />
-          <InputBox icon={<Lock size={20} />} name="confirmPassword" placeholder="Confirm Password" type="password" onChange={handleChange} />
+        <form className="space-y-5" onSubmit={handleRegister}>
+          {inputs.map((input, idx) => (
+            <FormField
+              key={idx}
+              input={input}
+              value={formData[input.name]}
+              error={errors[input.name]}
+              onChange={handleChange}
+            />
+          ))}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl font-semibold text-white text-lg bg-gradient-to-r from-[#52B7FF] to-[#0058FF] shadow-lg hover:opacity-95 transition-all duration-300"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-lg font-medium transition disabled:opacity-50"
           >
             {loading ? "Registering..." : "Register"}
           </button>
-        </form>
 
-        <p className="text-center text-gray-400 mt-6">
-          Already have an account?{" "}
-          <Link to="/login" className="text-[#52B7FF] hover:underline">
-            Login
-          </Link>
-        </p>
+          <p className="text-center text-gray-300 mt-2">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-400 underline">
+              Login
+            </Link>
+          </p>
+        </form>
       </div>
     </div>
   );
 }
 
-// Reusable Input field
-function InputBox({ icon, name, type = "text", placeholder, onChange }) {
-  return (
-    <div className="flex items-center gap-3 bg-white/5 border border-white/15 px-4 py-3 rounded-xl">
-      <span className="text-gray-300">{icon}</span>
-      <input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        onChange={onChange}
-        className="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none"
-      />
-    </div>
-  );
-}
+/* --------------------- INPUT CONFIG ------------------------- */
+const inputs = [
+  { label: "Restaurant Name", name: "restaurantName", icon: <Building2 />, type: "text" },
+  { label: "Owner Name", name: "ownerName", icon: <User />, type: "text" },
+  { label: "Email", name: "email", icon: <Mail />, type: "email" },
+  { label: "Phone", name: "phone", icon: <Phone />, type: "text" },
 
-// Reusable Select field
-function SelectBox({ icon, name, value, onChange, options, placeholder }) {
+  { label: "State", name: "state", icon: <MapPin />, type: "select",
+    options: ["Bihar", "UP", "Delhi", "Mumbai"] 
+  },
+
+  { label: "City", name: "city", icon: <MapPin />, type: "select",
+    options: ["Patna", "Gaya", "Noida", "Delhi"] 
+  },
+
+  { label: "Pincode", name: "pincode", icon: <MapPin />, type: "text" },
+
+  { label: "Type", name: "type", icon: <Building2 />, type: "select",
+    options: ["Restaurant", "Cafe", "Bakery"] 
+  },
+
+  { label: "Category", name: "category", icon: <ChefHat />, type: "select",
+    options: ["Veg", "Non-Veg", "Cake"] 
+  },
+
+  { label: "Password", name: "password", icon: <Lock />, type: "password" },
+  { label: "Confirm Password", name: "confirmPassword", icon: <Lock />, type: "password" },
+];
+
+/* --------------------- REUSABLE FORM FIELD ------------------------- */
+function FormField({ input, value, onChange, error }) {
+  const { label, name, type, icon, options } = input;
+
+  if (type === "select") {
+    return (
+      <div>
+        <label className="text-sm text-gray-300">{label}</label>
+        <div
+          className={`flex items-center gap-3 bg-white/10 border px-4 py-3 rounded-xl ${
+            error ? "border-red-500" : "border-white/20"
+          }`}
+        >
+          <span className="text-gray-400">{icon}</span>
+
+          <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            className="w-full bg-transparent outline-none text-white"
+          >
+            <option value="">Select {label}</option>
+            {options.map((opt, idx) => (
+              <option key={idx} value={opt} className="text-black">
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-3 bg-white/5 border border-white/15 px-4 py-3 rounded-xl">
-      <span className="text-gray-300">{icon}</span>
-      <select
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="w-full bg-transparent text-white focus:outline-none"
+    <div>
+      <label className="text-sm text-gray-300">{label}</label>
+
+      <div
+        className={`flex items-center gap-3 bg-white/10 border px-4 py-3 rounded-xl ${
+          error ? "border-red-500" : "border-white/20"
+        }`}
       >
-        <option value="">{placeholder}</option>
-        {options.map((opt, idx) => (
-          <option key={idx} value={opt}>{opt}</option>
-        ))}
-      </select>
+        <span className="text-gray-400">{icon}</span>
+
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          className="w-full bg-transparent text-white outline-none"
+        />
+      </div>
+
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );
 }
