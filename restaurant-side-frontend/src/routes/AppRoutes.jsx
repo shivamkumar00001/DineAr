@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import OwnerDashBoard from "../pages/Dashboard/OwnerDashboard";
 import SubscriptionPage from "../pages/subscription/subscriptionPage";
 import DishList from "../pages/Menu/DishList";
@@ -13,7 +13,6 @@ import Dashboard from "../pages/Dashboard/OwnerDashboard";
 
 export default function AppRoutes() {
   return <>
-       <BrowserRouter>
           <Routes>
           <Route path ="/" element= {<LandingPage/>}/>
           <Route path ="/subscribe/:restaurantId" element = {<SubscriptionPage/>}/>
@@ -25,6 +24,6 @@ export default function AppRoutes() {
            {/* NEW ORDER MANAGEMENT ROUTE */}
           <Route path="/restaurant/:restaurantId/orders" element={<OrdersPage/>} />
          </Routes>
-       </BrowserRouter>
+       
    </>
 }
