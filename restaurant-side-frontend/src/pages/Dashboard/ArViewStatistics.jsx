@@ -50,7 +50,10 @@ export default function ARViewStatistics({ restaurantId }) {
   };
 
   useEffect(() => {
-    fetchWeeklyStats();
+    const Fetch = ()=>{
+      fetchWeeklyStats();
+    }
+    Fetch()
   }, [restaurantId]);
 
   // Live updates for today
