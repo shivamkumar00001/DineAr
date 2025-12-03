@@ -2,7 +2,7 @@
 import ARViewStatistics from "./ArViewStatistics";
 import FeedbackSummary from "./FeedbackSummary";
 import ModelInsights from "./ModelsInsights";
-import Sidebar from "./Sidebar";
+import Sidebar from "../../components/Sidebar";
 import TableOrdersOverview from "./TableOrderOverview";
 
 export default function Dashboard() {

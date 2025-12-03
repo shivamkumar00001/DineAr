@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import useAutosave from "../../hooks/useAutoSave";
 import { compressImage } from "../../utils/CompressImage";
-import axiosClient from "../../api/axiosClient"; // matches your naming
+import axiosClient from "../../api/AxiosClient"; // matches your naming
 
 /**
  * Props:
