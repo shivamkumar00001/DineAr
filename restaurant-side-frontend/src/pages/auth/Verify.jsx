@@ -1,29 +1,33 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+const VerifyOTP = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email || "";
 
-  const handleForgot = async (e) => {
+  const [otp, setOTP] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleVerify = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!otp) return toast.error("Enter OTP");
 
+    setLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/forgot-password",
-        { email },
+        "http://localhost:5000/api/auth/verify-otp",
+        { email, otp },
         { withCredentials: true }
       );
 
-      toast.success(res.data.message || "OTP sent to your email!");
-      navigate("/verify-otp", { state: { email } });
+      toast.success(res.data.message || "OTP verified!");
+      navigate("/reset-password", { state: { email, otp } });
 
     } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong!");
+      toast.error(err.response?.data?.message || "Invalid OTP");
     } finally {
       setLoading(false);
     }
@@ -33,16 +37,16 @@ const ForgotPassword = () => {
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="bg-neutral-900 p-8 rounded-2xl shadow-lg w-full max-w-md border border-neutral-800">
         <h2 className="text-2xl font-bold text-white text-center mb-6">
-          Forgot Password 🔐
+          Verify OTP 🔐
         </h2>
-        <form onSubmit={handleForgot} className="space-y-4">
+        <form onSubmit={handleVerify} className="space-y-4">
           <div>
-            <label className="text-gray-300 text-sm">Email Address</label>
+            <label className="text-gray-300 text-sm">OTP</label>
             <input
-              type="email"
-              placeholder="Enter your registered email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              placeholder="Enter OTP sent to email"
+              value={otp}
+              onChange={(e) => setOTP(e.target.value)}
               className="w-full mt-1 bg-neutral-800 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               required
             />
@@ -52,7 +56,7 @@ const ForgotPassword = () => {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-lg font-semibold"
           >
-            {loading ? "Sending..." : "Send OTP"}
+            {loading ? "Verifying..." : "Verify OTP"}
           </button>
         </form>
       </div>
@@ -60,4 +64,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default VerifyOTP;
