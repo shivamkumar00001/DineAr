@@ -1,24 +1,43 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import app from "./app.js"; // <-- change here
+const express = require('express');
+require('dotenv').config();
+const cors = require('cors');
+const mongoose = require('mongoose');
+const http = require("http");
+const { Server } = require("socket.io");
 
-dotenv.config({ path: './config.env' });
+const app = express();
 
+// Middlewares
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+console.log("Loaded MONGO_URL =", process.env.MONGO_URL);
+
+// MongoDB
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.error(err));
+
+// Create HTTP server for socket.io
+const server = http.createServer(app);
+
+// Initialize socket.io
+const io = new Server(server, {
+  cors: { origin: "*" }
+});
+
+// Attach io to app for controllers
+app.set("io", io);
+
+// Load socket handler
+require("./config/socket")(io);
+
+// Routes
+app.use('/api/v1', require('./routes/menuRoutes'));
+app.use('/api/v1', require('./routes/dishRoutes'));
+app.use('/api/v1', require('./routes/orderRoutes')); // <-- NEW
+
+// Start Server
 const PORT = process.env.PORT || 5000;
-
-if (!process.env.MONGO_URI || !process.env.DB_NAME) {
-  console.error("MONGO_URI or DB_NAME is missing in config.env");
-  process.exit(1);
-}
-
-const MONGO_URL = `${process.env.MONGO_URI}/${process.env.DB_NAME}`;
-
-mongoose
-  .connect(MONGO_URL)
-  .then(() => {
-    console.log("Database connected");
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error("Database connection error:", err);
-  });
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
