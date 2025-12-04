@@ -61,7 +61,7 @@ export default function Register() {
       setLoading(true);
 
       const { data } = await axios.post(
-        "/api/auth/register",
+        "http://localhost:5001/api/auth/register",
         formData,
         { withCredentials: true }
       );

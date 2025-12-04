@@ -20,7 +20,7 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/reset-password",
+        "http://localhost:5001/api/auth/reset-password",
         { email, otp, password, confirmPassword },
         { withCredentials: true }
       );
