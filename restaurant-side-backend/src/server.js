@@ -1,53 +1,98 @@
-const express = require('express');
-require('dotenv').config();
-const cors = require('cors');
-const mongoose = require('mongoose');
-const http = require("http");
-const { Server } = require("socket.io");
+// ======================
+// SERVER ENTRY POINT
+// ======================
+
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import http from "http";
+import { Server } from "socket.io";
+
+// Routes (ES Modules)
+import authRoutes from "./routes/auth.Routes.js";
+import menuRoutes from "./routes/menuRoutes.js";
+import dishRoutes from "./routes/dishRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+
+// Socket handler
+import socketHandler from "./config/socket.js";
+
+dotenv.config();
 
 const app = express();
 
-// ===== CORS FIX =====
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-}));
+// ======================
+// CORS
+// ======================
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  })
+);
 
-// ===== Body Parsers =====
+// ======================
+// Middlewares
+// ======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-console.log("Loaded MONGO_URL =", process.env.MONGO_URL);
+// Debug Logger
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.url}`);
+  next();
+});
 
-// ===== MongoDB =====
-mongoose.connect(process.env.MONGO_URL)
+// ======================
+// MongoDB Connection
+// ======================
+mongoose
+  .connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.error(err));
+  .catch((err) => console.error("Mongo Connection Error:", err));
 
-// ===== HTTP Server =====
+// ======================
+// HTTP + SOCKET.IO SERVER
+// ======================
 const server = http.createServer(app);
 
-// ===== SOCKET.IO =====
 const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173", "http://localhost:5174"],
-    methods: ["GET", "POST"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 // Attach io to app
 app.set("io", io);
 
-// Load socket handlers
-require("./config/socket")(io);
+// Load socket events
+socketHandler(io);
 
-// ===== Routes =====
-app.use('/api/v1', require('./routes/menuRoutes'));
-app.use('/api/v1', require('./routes/dishRoutes'));
-app.use('/api/v1', require('./routes/orderRoutes'));
+// ======================
+// ROUTES
+// ======================
+app.use("/api/auth", authRoutes);   // <--- Auth system
+app.use("/api/v1", menuRoutes);     // <--- Menu
+app.use("/api/v1", dishRoutes);     // <--- Dishes
+app.use("/api/v1", orderRoutes);    // <--- Orders
 
-// ===== Start server =====
+// Healthcheck
+app.get("/", (req, res) => {
+  res.json({ success: true, message: "Backend running" });
+});
+
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Route not found" });
+});
+
+// ======================
+// START SERVER
+// ======================
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
