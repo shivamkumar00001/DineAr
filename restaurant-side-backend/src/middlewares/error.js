@@ -1,5 +1,4 @@
-// middlewares/error.js
-
+// Custom Error class
 class ErrorHandler extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -7,7 +6,8 @@ class ErrorHandler extends Error {
   }
 }
 
-export const errorMiddleware = (err, req, res, next) => {
+// Error handling middleware
+const errorMiddleware = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.message = err.message || "Internal server error.";
 
@@ -24,7 +24,10 @@ export const errorMiddleware = (err, req, res, next) => {
   }
 
   if (err.code === 11000) {
-    err = new ErrorHandler(`Duplicate ${Object.keys(err.keyValue)} entered`, 400);
+    err = new ErrorHandler(
+      `Duplicate ${Object.keys(err.keyValue)} entered`,
+      400
+    );
   }
 
   return res.status(err.statusCode).json({
@@ -33,4 +36,7 @@ export const errorMiddleware = (err, req, res, next) => {
   });
 };
 
-export default ErrorHandler;
+module.exports = {
+  ErrorHandler,
+  errorMiddleware,
+};

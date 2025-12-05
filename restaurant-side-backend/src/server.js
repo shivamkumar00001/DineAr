@@ -2,22 +2,25 @@
 // SERVER ENTRY POINT
 // ======================
 
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import mongoose from "mongoose";
-import cookieParser from "cookie-parser";
-import http from "http";
-import { Server } from "socket.io";
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+const http = require("http");
+const { Server } = require("socket.io");
 
-// Routes (ES Modules)
-import authRoutes from "./routes/auth.Routes.js";
-import menuRoutes from "./routes/menuRoutes.js";
-import dishRoutes from "./routes/dishRoutes.js";
-import orderRoutes from "./routes/orderRoutes.js";
+// Middlewares
+const { isAuthenticated } = require("./middlewares/isAuthenticated.js");
+
+// Routes
+const authRoutes = require("./routes/auth.Routes.js");
+const menuRoutes = require("./routes/menuRoutes.js");
+const dishRoutes = require("./routes/dishRoutes.js");
+const orderRoutes = require("./routes/orderRoutes.js");
 
 // Socket handler
-import socketHandler from "./config/socket.js";
+const socketHandler = require("./config/socket.js");
 
 dotenv.config();
 
@@ -56,7 +59,7 @@ mongoose
   .catch((err) => console.error("Mongo Connection Error:", err));
 
 // ======================
-// HTTP + SOCKET.IO SERVER
+// SOCKET.IO
 // ======================
 const server = http.createServer(app);
 
@@ -67,28 +70,47 @@ const io = new Server(server, {
   },
 });
 
-// Attach io to app
 app.set("io", io);
-
-// Load socket events
 socketHandler(io);
 
 // ======================
 // ROUTES
 // ======================
-app.use("/api/auth", authRoutes);   // <--- Auth system
-app.use("/api/v1", menuRoutes);     // <--- Menu
-app.use("/api/v1", dishRoutes);     // <--- Dishes
-app.use("/api/v1", orderRoutes);    // <--- Orders
+
+// 🔓 Public Routes
+app.use("/api/auth", authRoutes);
+
+// 🔐 Protected Routes
+app.use("/api/v1/menu", isAuthenticated, menuRoutes);
+app.use("/api/v1/dish", isAuthenticated, dishRoutes);
+app.use("/api/v1/order", isAuthenticated, orderRoutes);
+app.use("/api/restaurant", require("./routes/restaurant.routes.js"));
+
 
 // Healthcheck
 app.get("/", (req, res) => {
   res.json({ success: true, message: "Backend running" });
 });
 
-// 404 Handler
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Route not found" });
+// ======================
+// 404 Handler (Must be last route)
+// ======================
+app.use("*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+// ======================
+// GLOBAL ERROR HANDLER
+// ======================
+app.use((err, req, res, next) => {
+  console.error("🔥 ERROR:", err);
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
 });
 
 // ======================

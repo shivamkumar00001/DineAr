@@ -1,5 +1,6 @@
-export const sendToken = (user, statusCode, message, res) => {
-  const token = user.getJWTToken();
+const sendToken = (user, statusCode, message, res) => {
+  // Generate JWT with restaurantId
+  const token = user.getJWTToken(); // Make sure getJWTToken() uses restaurantId
 
   const cookieExpireDays = Number(process.env.COOKIE_EXPIRE) || 7;
 
@@ -7,7 +8,7 @@ export const sendToken = (user, statusCode, message, res) => {
     expires: new Date(Date.now() + cookieExpireDays * 24 * 60 * 60 * 1000),
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production", // secure cookie only in production
+    secure: process.env.NODE_ENV === "production",
   };
 
   res
@@ -18,7 +19,7 @@ export const sendToken = (user, statusCode, message, res) => {
       message,
       token,
       user: {
-        id: user._id,
+        restaurantId: user.restaurantId, // use restaurantId instead of _id
         email: user.email,
         ownerName: user.ownerName,
         phone: user.phone,
@@ -26,3 +27,5 @@ export const sendToken = (user, statusCode, message, res) => {
       },
     });
 };
+
+module.exports = sendToken;
