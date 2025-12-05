@@ -27,6 +27,8 @@ exports.getMenu = async (req, res, next) => {
       limit = 20
     } = req.query;
 
+    
+
     const query = { restaurantId };
 
     // Category filter
@@ -73,6 +75,7 @@ exports.getMenu = async (req, res, next) => {
       dishes
     }, "Menu retrieved successfully");
 
+ 
   } catch (err) {
     logger.error("Get menu filter error:", err);
     next(err);
