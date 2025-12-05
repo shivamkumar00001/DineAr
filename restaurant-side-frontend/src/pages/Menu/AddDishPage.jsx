@@ -15,7 +15,7 @@ function makeSlug(text = "") {
 export default function AddDishPage() {
   const { restaurantId } = useParams();
   const navigate = useNavigate();
-  const RESTAURANT_ID = restaurantId || "restaurant123";
+  const RESTAURANT_ID = restaurantId ;
 
   const [form, setForm] = useState({
     name: "",

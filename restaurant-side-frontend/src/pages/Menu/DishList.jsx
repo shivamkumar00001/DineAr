@@ -34,8 +34,8 @@ const DishList = () => {
 
 
   const navigate = useNavigate();
-  const { restaurantId: paramId } = useParams();
-  const restaurantId = paramId || "restaurant123";   // ALWAYS gives valid ID
+  const { restaurantId } = useParams();
+  
 
 
   const handleAddNewDish = () => {

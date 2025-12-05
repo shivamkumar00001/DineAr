@@ -1,10 +1,13 @@
 // src/hooks/useMenu.js
 import { useState, useEffect, useMemo, useCallback } from "react";
 import menuApi from "../api/menuApi";
-
-const RESTAURANT_ID = "restaurant123";
+import { useParams } from "react-router-dom";
 
 export default function useMenu() {
+  // 🔥 FIX: useParams must be inside the hook
+  const { restaurantId } = useParams();
+  const RESTAURANT_ID = restaurantId;
+
   // Core states
   const [dishes, setDishes] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -26,6 +29,8 @@ export default function useMenu() {
     1️⃣ Fetch menu (with retry + loading UI)
   ------------------------------------------------------------ */
   const fetchMenu = useCallback(async () => {
+    if (!RESTAURANT_ID) return; // Prevent undefined crash
+
     setLoading(true);
     setError(null);
 
@@ -56,28 +61,27 @@ export default function useMenu() {
       setError("Failed to load menu");
       setLoading(false);
 
-      // Auto retry after 2 seconds (production-safe)
       setTimeout(fetchMenu, 2000);
     }
-  }, []);
+  }, [RESTAURANT_ID]);
 
   useEffect(() => {
     fetchMenu();
   }, [fetchMenu]);
 
   /* ------------------------------------------------------------
-    2️⃣ Debounce search for smoother UI
+    2️⃣ Debounce search
   ------------------------------------------------------------ */
   useEffect(() => {
     const delay = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(delay);
   }, [searchQuery]);
 
   /* ------------------------------------------------------------
-    3️⃣ Filtering + Sorting (super optimized using useMemo)
+    3️⃣ Filtering + Sorting
   ------------------------------------------------------------ */
   const filteredDishes = useMemo(() => {
     if (loading) return [];
@@ -113,7 +117,6 @@ export default function useMenu() {
         list.sort((a, b) => b.name.localeCompare(a.name));
         break;
       default:
-        // name-asc
         list.sort((a, b) => a.name.localeCompare(b.name));
     }
 
@@ -121,12 +124,11 @@ export default function useMenu() {
   }, [dishes, debouncedSearch, selectedCategory, selectedStatus, sortBy, loading]);
 
   /* ------------------------------------------------------------
-    4️⃣ Toggle availability (optimistic UI + rollback)
+    4️⃣ Toggle availability
   ------------------------------------------------------------ */
   const toggleAvailability = async (dishId) => {
     const prevState = dishes;
 
-    // 1. Optimistic update (super fast)
     setDishes((prev) =>
       prev.map((d) =>
         d._id === dishId ? { ...d, available: !d.available } : d
@@ -137,14 +139,12 @@ export default function useMenu() {
       const res = await menuApi.toggleAvailability(RESTAURANT_ID, dishId);
       const newAvailable = res.data.data.available;
 
-      // Sync with server
       setDishes((prev) =>
         prev.map((d) =>
           d._id === dishId ? { ...d, available: newAvailable } : d
         )
       );
 
-      // Update stats fast
       setStatistics((prev) => ({
         ...prev,
         available: newAvailable
@@ -153,32 +153,28 @@ export default function useMenu() {
       }));
     } catch (err) {
       console.error("toggleAvailability error:", err);
-
-      // Rollback UI if server failed
       setDishes(prevState);
     }
   };
 
   /* ------------------------------------------------------------
-    5️⃣ Delete Dish (fast + safe)
+    5️⃣ Delete dish
   ------------------------------------------------------------ */
   const deleteDish = async (dishId) => {
     const previous = dishes;
 
-    // Optimistic removal
     setDishes((prev) => prev.filter((d) => d._id !== dishId));
 
     try {
       await menuApi.deleteDish(RESTAURANT_ID, dishId);
     } catch (err) {
       console.error("Delete error:", err);
-      // Rollback
       setDishes(previous);
     }
   };
 
   /* ------------------------------------------------------------
-    6️⃣ Auto-refetch when user returns to tab (production!)
+    6️⃣ Auto refresh on tab focus
   ------------------------------------------------------------ */
   useEffect(() => {
     const onFocus = () => fetchMenu();
@@ -196,9 +192,6 @@ export default function useMenu() {
     setSortBy("name-asc");
   };
 
-  /* ------------------------------------------------------------
-    Return Final Values
-  ------------------------------------------------------------ */
   return {
     loading,
     error,

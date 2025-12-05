@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
-import axios from "axios";
 import { toast } from "react-hot-toast";
+import { api } from "../../services/api";
 
+// Input UI Component
 const InputField = ({ icon: Icon, type, name, placeholder, value, onChange }) => (
   <div className="flex items-center gap-3 bg-white/5 border border-white/15 px-4 py-3 rounded-xl">
     <Icon className="text-gray-300" size={20} />
@@ -23,7 +24,6 @@ const InputField = ({ icon: Icon, type, name, placeholder, value, onChange }) =>
 
 export default function Login() {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
@@ -40,20 +40,46 @@ export default function Login() {
     }
 
     setLoading(true);
+
     try {
-      const res = await axios.post(
-        "http://localhost:5001/api/auth/login",
-        formData,
-        { withCredentials: true }
-      );
+      const res = await api.post("/auth/login", formData);
 
       toast.success(res.data.message || "Login successful!");
-      setTimeout(() => navigate("/dashboard"), 1200);
+
+      // Save JWT
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+      // ✅ FIX #1 — Correct key name
+      // Backend sends: user.restaurantId (NOT user.id)
+      if (res.data.user?.restaurantId) {
+        localStorage.setItem("restaurantId", res.data.user.restaurantId); // FIXED
+      }
+
+      // Check redirect
+      const redirect = localStorage.getItem("redirectAfterLogin");
+      if (redirect) {
+        localStorage.removeItem("redirectAfterLogin");
+        navigate(redirect, { replace: true });
+      } else {
+
+        // ✅ FIX #2 — Use restaurantId for navigation
+        const restaurantId = res.data.user.restaurantId; // FIXED
+        console.log("Redirecting to dashboard:", restaurantId);
+
+        if (!restaurantId) {
+          toast.error("Restaurant ID missing. Contact support.");
+          return;
+        }
+
+        navigate(`/dashboard/${restaurantId}`);
+      }
 
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || "Server error. Check backend!");
-      setFormData(prev => ({ ...prev, password: "" })); // clear password
+      toast.error(err.response?.data?.message || "Server error. Try again.");
+      setFormData(prev => ({ ...prev, password: "" }));
     } finally {
       setLoading(false);
     }

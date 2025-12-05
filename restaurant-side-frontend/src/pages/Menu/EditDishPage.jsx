@@ -8,7 +8,7 @@ import DishForm from "../../components/menu/EditDishForm";
 export default function EditDishPage() {
   const { restaurantId, id } = useParams();
   const navigate = useNavigate();
-  const RESTAURANT_ID = restaurantId || "restaurant123";
+  const RESTAURANT_ID = restaurantId;
 
   const [initial, setInitial] = useState(null);
   const [loading, setLoading] = useState(true);

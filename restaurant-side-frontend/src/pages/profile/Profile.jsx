@@ -1,21 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../../services/api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const Profile = () => {
   const [owner, setOwner] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { data } = await api.get("/profile/me");
-        setOwner(data); // safe, after async fetch
+        const { data } = await api.get("/auth/profile"); // use /auth/profile
+        setOwner(data.user || data); // adjust if your backend returns { user: {...} }
       } catch (err) {
         console.error(err);
+        toast.error("Failed to fetch profile. Please login again.");
+        navigate("/login");
       }
     };
 
-    fetchProfile(); // call async function
-  }, []);
+    fetchProfile();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await api.get("/auth/logout");
+      localStorage.removeItem("token"); // clear token
+      toast.success("Logged out successfully!");
+      navigate("/login", { replace: true });
+    } catch (err) {
+      console.error(err);
+      toast.error("Logout failed. Try again.");
+    }
+  };
 
   if (!owner) return <p>Loading...</p>;
 
@@ -49,12 +66,21 @@ const Profile = () => {
         <p><strong>Description:</strong> {owner.restaurantDescription}</p>
       </div>
 
-      <button
-        onClick={() => window.location.href = "/edit-profile"}
-        className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-      >
-        Edit Profile
-      </button>
+      <div className="mt-6 flex gap-4">
+        <button
+          onClick={() => navigate("/edit-profile")}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Edit Profile
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
+          Sign Out
+        </button>
+      </div>
     </div>
   );
 };
